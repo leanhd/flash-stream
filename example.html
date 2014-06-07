@@ -1,0 +1,57 @@
+<!doctype html>
+<html>
+<head>
+  <title></title>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/swfobject/2.2/swfobject.min.js"></script>
+  <script>
+    var stratusKey = '--- ADD YOUR STRATUS KEY HERE ---';
+    var peerID = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx';
+
+    var connectUrl = 'rtmfp://stratus.adobe.com/' + stratusKey + '/';
+    var streamName = 'live';
+
+    document.addEventListener('DOMContentLoaded', onLoad, false);
+
+    function onLoad() {
+      var id = 'stream';
+      var stream = document.querySelector('#' + id);
+
+      swfobject.embedSWF(
+        'FlashStream.swf',
+        id,
+        stream.clientWidth, stream.clientHeight,
+        '10.0.0', '',
+        { callback: onStreamEvent, id: id },
+        { wmode: 'transparent', allowScriptAccess: 'always' }
+      );
+
+      function onStreamEvent(id, ev) {
+        var eventName = ev.shift();
+        var eventArgs = ev;
+
+        console.log('*', id, eventName, eventArgs);
+
+        switch(eventName) {
+          case 'Flash.Ready':
+            console.log('connecting to', connectUrl);
+            stream.connect(connectUrl);
+            return;
+
+          case 'NetConnection.Connect.Success':
+            console.log('playing', streamName, peerID);
+            stream.play(streamName, peerID);
+            return;
+
+          case 'NetStream.Play.Start':
+            console.log('stream playing');
+            return;
+        }
+      }
+
+    }
+  </script>
+</head>
+<body>
+  <div id="stream" style="width: 640px; height: 480px; background-color: black;"></div>
+</body>
+</html>
